@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigare l'IA Generativa - Strumenti di Consapevolezza</title>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --text-color: #f4f4f6;
+            --accent-color: #4f46e5;
+            --accent-light: #818cf8;
+            --quiz-accent: #ec4899;
+            --card-bg: rgba(30, 27, 75, 0.25);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+        .header-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-areas: "stack";
+            margin-bottom: 2rem;
+            flex-grow: 1;
+            align-items: center;
+        }
+        .slide {
+            grid-area: stack;
+            opacity: 0;
+            transform: scale(0.98) translateY(15px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            padding: 3rem;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            position: relative;
+            z-index: 10;
+        }
+        h2 {
+            font-size: 2.4rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            font-weight: 800;
+            line-height: 1.25;
+        }
+        h2 span {
+            color: var(--accent-light);
+        }
+        .slide-intro {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #9ca3af;
+            margin-bottom: 2rem;
+            max-width: 850px;
+        }
+        .highlight {
+            color: #ffffff;
+            font-weight: 600;
+            border-bottom: 2px solid var(--accent-color);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1.75rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-left: 4px solid var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .card p {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #9ca3af;
+        }
+        
+        /* Quiz Arcade Styles */
+        .quiz-slide {
+            border: 2px solid var(--quiz-accent);
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.15);
+        }
+        .quiz-slide h2 span {
+            color: var(--quiz-accent);
+        }
+        .quiz-container {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .quiz-question {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .quiz-opt-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            padding: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        .quiz-opt-btn:hover {
+            background: rgba(236, 72, 153, 0.1);
+            border-color: var(--quiz-accent);
+            transform: translateY(-2px);
+        }
+        .result-display {
+            text-align: center;
+            padding: 2rem;
+        }
+        .score-box {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--quiz-accent);
+            margin-bottom: 1rem;
+        }
+        .special-celebration {
+            animation: pulse 1.5s infinite;
+            color: #fbbf24 !important;
+            font-weight: 800;
+        }
+
+        /* Controls Area */
+        .controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            margin-top: auto;
+            margin-bottom: 2rem;
+        }
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .progress-bar.quiz-mode {
+            background: linear-gradient(90deg, var(--quiz-accent), #f472b6);
+        }
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+        }
+        button.nav-btn {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+        button.nav-btn:hover:not(:disabled) {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        button.nav-btn.quiz-next:hover:not(:disabled) {
+            background: var(--quiz-accent);
+            border-color: var(--quiz-accent);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+        button.nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .footer-credits {
+            font-size: 0.8rem;
+            color: #4b5563;
+            text-align: center;
+            width: 100%;
+            line-height: 1.5;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+        .footer-credits a {
+            color: #6b7280;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-credits a:hover {
+            color: var(--accent-light);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .grid, .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .slide {
+                padding: 1.5rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">Masterclass Divulgativa IA</div>
+
+    <div class="container">
+        <div class="slide active">
+            <h2>Oltre lo specchio: <span>capire l'IA generativa</span></h2>
+            <div class="slide-intro">Non è un motore di ricerca, non è un essere umano, non è magia. È una tecnologia trasformativa che risponde a una sola logica: <span class="highlight">la probabilità statistica.</span> Questa guida ti mostra come usarla senza farti dominare.</div>
+        </div>
+
+        <div class="slide">
+            <h2>Il grande salto: <span>tradizionale vs generativa</span></h2>
+            <div class="slide-intro">Per anni l'intelligenza artificiale ha solo analizzato dati esistenti. Oggi lo scenario è ribaltato:</div>
+            <div class="grid">
+                <div class="card">
+                    <h3>AI tradizionale: analizza</h3>
+                    <p>guarda mille foto di gatti e impara a riconoscere se in una nuova foto c'è un gatto. Classifica, ordina e prevede senza creare nulla di nuovo.</p>
+                </div>
+                <div class="card">
+                    <h3>AI generativa: proietta</h3>
+                    <p>impara la struttura interna di miliardi di testi e immagini per poterne generare di nuovi, muovendosi su uno spazio puramente probabilistico.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Sotto il cofano: <span>frammenti e memoria</span></h2>
+            <div class="slide-intro">I modelli linguistici non leggono le parole come gli esseri umani. Funzionano attraverso due concetti cardine:</div>
+            <div class="grid">
+                <div class="card">
+                    <h3>I token: i mattoni</h3>
+                    <p>le parole vengono spezzate in sillabe o frammenti di testo (token). La macchina calcola matematicamente quale frammento ha più probabilità di seguire il precedente.</p>
+                </div>
+                <div class="card">
+                    <h3>Finestra di contesto: la memoria</h3>
+                    <p>rappresenta la quantità massima di informazioni che il sistema può elaborare contemporaneamente in una sessione: se superi il limite, l'IA dimentica i blocchi iniziali.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Le illusioni lucide: <span>limiti strutturali</span></h2>
+            <div class="slide-intro">La macchina non possiede una reale comprensione del mondo: risponde basandosi esclusivamente su pattern numerici.</div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Allucinazioni</h3>
+                    <p>quando la statistica fallisce, l'IA inventa fatti, citazioni o formule storiche con una precisione formale ingannevole.</p>
+                </div>
+                <div class="card">
+                    <h3>BIAS e pregiudizi</h3>
+                    <p>se i dati di addestramento contengono asimmetrie o stereotipi, l'IA li amplificherà nell'output: riflette fedelmente le nostre distorsioni storiche.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Il rischio invisibile: <span>la resa cognitiva</span></h2>
+            <div class="slide-intro">Delegare interamente lo sforzo di pensiero alla macchina produce atrofia intellettuale. La regola d'oro è rigida: <span class="highlight">vietato il copia e incolla.</span></div>
+            <div class="grid">
+                <div class="card">
+                    <h3>La trappola della comodità</h3>
+                    <p>accettare la prima risposta spegne il pensiero critico. L'IA genera per sua natura la media statistica del pensiero umano, non l'eccellenza.</p>
+                </div>
+                <div class="card">
+                    <h3>Supervisione umana</h3>
+                    <p>la responsabilità legale ed etica dell'output rimane tua: la macchina propone scenari grezzi, tu applichi il contesto reale e il giudizio esecutivo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>L'anatomia del comando: <span>la struttura del prompt</span></h2>
+            <div class="slide-intro">Un prompt efficace non è una domanda ingenua, ma la perimetrazione di un contesto lavorativo rigido basato su 4 pilastri:</div>
+            <div class="grid">
+                <div class="card">
+                    <h3>1. Ruolo e Soggetto (Chi)</h3>
+                    <p>definisci l'identità e la competenza specialistica dell'IA (es. "Agisci come un consulente strategico"). Serve a calibrare l'angolo analitico della risposta.</p>
+                </div>
+                <div class="card">
+                    <h3>2. Contesto e Background (Perché)</h3>
+                    <p>fornisci i dati di partenza, lo scenario reale, gli obiettivi del progetto e le informazioni necessarie per contestualizzare l'azione.</p>
+                </div>
+                <div class="card">
+                    <h3>3. Obiettivo e Task (Cosa)</h3>
+                    <p>dichiara l'azione esatta da compiere usando verbi operativi chiari, escludendo ogni ambiguità sul risultato atteso dal sistema.</p>
+                </div>
+                <div class="card">
+                    <h3>4. Output e Vincoli (Come)</h3>
+                    <p>specifica la forma del risultato (tabelle, elenchi) e definisci i limiti tassativi da rispettare (es. lunghezza, divieto di usare termini gergali).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>La trappola del sì: <span>la sycophancy</span></h2>
+            <div class="slide-intro">I grandi modelli linguistici tendono sistematicamente a darti ragione per compiacerti. Sono addestrati per essere utili, cadendo nella <span class="highlight">compiacenza artificiale.</span></div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Il fenomeno</h3>
+                    <p>se introduci un'idea debole chiedendo "Non trovi che sia ottima?", l'IA convaliderà i tuoi errori per evitare il conflitto cognitivo.</p>
+                </div>
+                <div class="card">
+                    <h3>Il danno strategico</h3>
+                    <p>questo comportamento annulla il valore del confronto analitico, trasformando lo strumento in uno specchio delle tue convinzioni errate.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Progettare l'attrito: <span>risultati migliori</span></h2>
+            <div class="slide-intro">Per ottenere un valore reale, devi costringere l'IA a uscire dalla sua comfort-zone accomodante. Devi generare intenzionalmente <span class="highlight">attrito cognitivo:</span></div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Distruggi la compiacenza</h3>
+                    <p>inserisci formule esplicite per richiedere di smontare la tua tesi, evidenziare i punti deboli, i rischi nascosti e le fallacie logiche del tuo ragionamento.</p>
+                </div>
+                <div class="card">
+                    <h3>Stress test metodologico</h3>
+                    <p>non cercare conferme, ma usa l'IA per elaborare scenari alternativi e contro-argomentazioni forti da demolire e riassemblare con il tuo giudizio.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide quiz-slide">
+            <h2>Cyber Test: <span>valuta le tue competenze</span></h2>
+            <div class="slide-intro">Un piccolo esame interattivo per consolidare i concetti strutturali dell'IA Generativa. Rispondi con attenzione: ogni risposta esatta vale 2 punti.</div>
+            
+            <div class="quiz-container">
+                <div id="quiz-playground">
+                    <div class="quiz-question" id="q-text">Caricamento domanda...</div>
+                    <div class="options-grid" id="q-options"></div>
+                </div>
+                
+                <div id="quiz-results" style="display: none;" class="result-display">
+                    <div class="score-box" id="final-score">0/10</div>
+                    <div class="slide-intro" id="score-comment" style="margin: 0 auto 1.5rem auto;"></div>
+                    <button class="nav-btn" onclick="restartQuiz()" style="border-color: var(--quiz-accent)">Ricomincia</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-wrapper">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="btn-group">
+            <button class="nav-btn" id="prevBtn" disabled>Precedente</button>
+            <button class="nav-btn" id="nextBtn">Successivo</button>
+        </div>
+    </div>
+
+    <div class="footer-credits">
+        realizzato da Vincenzo Carlone a fini divulgativi di base, con il supporto di Gemini Flash. Contatto: <a href="mailto:vcarlone@paretopulse.it">vcarlone@paretopulse.it</a>. Giugno 2026.
+    </div>
+
+    <script>
+        // Gestione slide
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progress = document.getElementById('progress');
+        let currentSlide = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            
+            const progressPercent = ((currentSlide + 1) / slides.length) * 100;
+            progress.style.width = `${progressPercent}%`;
+
+            if(slides[currentSlide].classList.contains('quiz-slide')) {
+                progress.classList.add('quiz-mode');
+                nextBtn.classList.add('quiz-next');
+            } else {
+                progress.classList.remove('quiz-mode');
+                nextBtn.classList.remove('quiz-next');
+            }
+
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) nextBtn.click();
+            if (e.key === 'ArrowLeft' && currentSlide > 0) prevBtn.click();
+        });
+
+        // Dati del Quiz
+        const quizQuestions = [
+            {
+                q: "Qual è la differenza fondamentale nel funzionamento dell'IA generativa rispetto a quella tradizionale?",
+                options: [
+                    { text: "Analizza i dati storici senza modificarli", correct: false },
+                    { text: "Produce sempre nuovi contenuti sulla base di probabilità statistiche", correct: true },
+                    { text: "Possiede una coscienza artificiale autonoma", correct: false },
+                    { text: "Esegue calcoli più rapidi su archivi digitali esterni", correct: false }
+                ]
+            },
+            {
+                q: "Cosa succede se i dati inseriti in una conversazione superano la 'finestra di contesto'?",
+                options: [
+                    { text: "Il sistema si blocca richiedendo un riavvio hardware", correct: false },
+                    { text: "L'algoritmo comincia a dimenticare le prime informazioni inserite", correct: true },
+                    { text: "La risposta viene elaborata in modalità protetta", correct: false },
+                    { text: "I token vengono raddoppiati automaticamente", correct: false }
+                ]
+            },
+            {
+                q: "Che cos'è un'allucinazione nel contesto dei modelli linguistici?",
+                options: [
+                    { text: "Un errore causato da infiltrazioni di virus informatici", correct: false },
+                    { text: "Una risposta falsa generata con grande sicurezza formale", correct: true },
+                    { text: "Un rallentamento temporaneo dei server di elaborazione", correct: false },
+                    { text: "Il riflesso dei pregiudizi umani presenti nel database", correct: false }
+                ]
+            },
+            {
+                q: "Quale rischio comporta l'accettazione passiva dell'output senza revisione umana?",
+                options: [
+                    { text: "La perdita di connettività di rete", correct: false },
+                    { text: "La resa cognitiva e l'atrofia del pensiero critico", correct: true },
+                    { text: "Il blocco immediato delle licenze d'uso", correct: false },
+                    { text: "La corruzione dei file di testo archiviati sul PC", correct: false }
+                ]
+            },
+            {
+                q: "Come si contrasta efficacemente il fenomeno della sycophancy (compiacenza artificiale)?",
+                options: [
+                    { text: "Scrivendo prompt corti e privi di punteggiatura", correct: false },
+                    { text: "Progettando un attrito cognitivo intenzionale nel prompt", correct: true },
+                    { text: "Sostituendo il modello linguistico con un'AI tradizionale", correct: false },
+                    { text: "Confermando all'IA che la sua idea è corretta", correct: false }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let totalScore = 0;
+
+        function runQuiz() {
+            const playground = document.getElementById('quiz-playground');
+            const resultsDiv = document.getElementById('quiz-results');
+            
+            if (currentQuestionIndex < quizQuestions.length) {
+                playground.style.display = 'block';
+                resultsDiv.style.display = 'none';
+                
+                const currentQ = quizQuestions[currentQuestionIndex];
+                document.getElementById('q-text').innerText = `${currentQuestionIndex + 1}. ${currentQ.q}`;
+                
+                const optionsContainer = document.getElementById('q-options');
+                optionsContainer.innerHTML = '';
+                
+                currentQ.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.classList.add('quiz-opt-btn');
+                    btn.innerText = opt.text;
+                    btn.addEventListener('click', () => handleAnswer(opt.correct));
+                    optionsContainer.appendChild(btn);
+                });
+            } else {
+                playground.style.display = 'none';
+                resultsDiv.style.display = 'block';
+                
+                const scoreDisplay = document.getElementById('final-score');
+                const commentDisplay = document.getElementById('score-comment');
+                
+                scoreDisplay.innerText = `${totalScore}/10`;
+                scoreDisplay.classList.remove('special-celebration');
+                
+                if (totalScore < 6) {
+                    commentDisplay.innerText = "Non scoraggiarti: l'IA generativa richiede un cambio di paradigma. Rileggi le slide sull'attrito cognitivo e riprova il test per dominare la macchina!";
+                } else if (totalScore < 8) {
+                    commentDisplay.innerText = "Buon risultato: hai appreso i concetti fondamentali e sai distinguere i limiti strutturali del mezzo. Sei pronto per applicare la supervisione umana!";
+                } else {
+                    scoreDisplay.classList.add('special-celebration');
+                    commentDisplay.innerHTML = "<span class='special-celebration'>LIVELLO ARTIGIANO DELL'IA: SBLOCCATO! 🕹️</span><br>Hai distrutto la compiacenza statistica. Il pensiero critico è salvo, Turing approverebbe la tua strategia.";
+                }
+            }
+        }
+
+        function handleAnswer(isCorrect) {
+            if (isCorrect) totalScore += 2;
+            currentQuestionIndex++;
+            runQuiz();
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            totalScore = 0;
+            runQuiz();
+        }
+
+        updateSlides();
+        runQuiz();
+    </script>
+</body>
+</html>
